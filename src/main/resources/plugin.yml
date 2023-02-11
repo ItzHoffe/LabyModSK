@@ -1,0 +1,6 @@
+name: LabyModSK
+version: '${project.version}'
+main: dk.hoffe.labymodsk.Main
+author: "Itz_Hoffe"
+depend:
+  - Skript
