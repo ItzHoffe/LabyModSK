@@ -8,7 +8,16 @@ public class LabyPlayer {
     private Player player;
     @Getter
     private LabyVersion version;
-    public LabyPlayer(Player player) {
+    public LabyPlayer(Player player, LabyVersion version) {
         this.player = player;
+        this.version = version;
+    }
+
+    @Override
+    public String toString() {
+        return "LabyPlayer{" +
+                "player=" + player +
+                ", version=" + version +
+                '}';
     }
 }

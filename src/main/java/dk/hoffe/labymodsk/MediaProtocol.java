@@ -4,16 +4,14 @@ import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
-import io.netty.handler.codec.EncoderException;
 import net.minecraft.server.v1_8_R3.PacketDataSerializer;
 import net.minecraft.server.v1_8_R3.PacketPlayOutCustomPayload;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class LabyModProtocol {
+public class MediaProtocol {
     /**
      * Send a message to LabyMod
      * @param player Minecraft Client
@@ -24,7 +22,7 @@ public class LabyModProtocol {
         byte[] bytes = getBytesToSend( key, messageContent.toString() );
 
         PacketDataSerializer pds = new PacketDataSerializer( Unpooled.wrappedBuffer( bytes ) );
-        PacketPlayOutCustomPayload payloadPacket = new PacketPlayOutCustomPayload( "labymod3:main", pds );
+        PacketPlayOutCustomPayload payloadPacket = new PacketPlayOutCustomPayload( "labymod3:media", pds );
         ((CraftPlayer) player).getHandle().playerConnection.sendPacket( payloadPacket );
     }
 
@@ -80,12 +78,10 @@ public class LabyModProtocol {
     private static void writeString( ByteBuf buf, String string ) {
         byte[] abyte = string.getBytes(StandardCharsets.UTF_8);
 
-        if ( abyte.length > Short.MAX_VALUE ) {
-            throw new EncoderException( "String too big (was " + string.length() + " bytes encoded, max " + Short.MAX_VALUE + ")" );
-        } else {
-            writeVarIntToBuffer( buf, abyte.length );
-            buf.writeBytes( abyte );
-        }
+
+        writeVarIntToBuffer( buf, abyte.length );
+        buf.writeBytes( abyte );
+
     }
 
     /**

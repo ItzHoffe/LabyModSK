@@ -1,6 +1,7 @@
 package dk.hoffe.labymodsk;
 
 import dk.hoffe.labymodsk.Classes.LabyPlayer;
+import dk.hoffe.labymodsk.Classes.LabyVersion;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.bukkit.entity.Player;
@@ -9,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
+import javax.sound.sampled.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class PlayerManager implements PluginMessageListener, Listener {
                 return labyPlayer;
             }
         }
-        return null;
+        return new LabyPlayer(player, new LabyVersion("0.0.0"));
     }
 
     @Override
@@ -34,12 +36,12 @@ public class PlayerManager implements PluginMessageListener, Listener {
         }
 
         ByteBuf buf = Unpooled.wrappedBuffer(message);
-        String key = LabyModProtocol.readString(buf, Short.MAX_VALUE);
-        String json = LabyModProtocol.readString(buf, Short.MAX_VALUE);
+        String key = MediaProtocol.readString(buf, Short.MAX_VALUE);
+        String json = MediaProtocol.readString(buf, Short.MAX_VALUE);
 
         // LabyMod user joins the server
         if(key.equals("INFO")) {
-            labyPlayers.add(new LabyPlayer(player));
+            labyPlayers.add(new LabyPlayer(player, new LabyVersion("1.0.0")));
         }
     }
 

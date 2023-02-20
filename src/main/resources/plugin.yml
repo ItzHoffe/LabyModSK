@@ -4,3 +4,6 @@ main: dk.hoffe.labymodsk.Main
 author: "Itz_Hoffe"
 depend:
   - Skript
+commands:
+  test:
+    usage: "/test"
