@@ -19,38 +19,53 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.TargetDataLine;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TestCommand implements CommandExecutor, PluginMessageListener {
     public TestCommand() {
         Main.getInstance().getServer().getMessenger().registerIncomingPluginChannel(Main.getInstance(), "labymod3:media", this);
     }
-    private List<String> files = Arrays.asList("test.ogg", "test2.ogg");
+    private File[] files = null;
+    private int index = 0;
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+        File dir = new File(Main.getInstance().getDataFolder(), "nvr");
+        files = dir.listFiles();
+        Arrays.sort(files, Comparator.comparing(File::getName));
+        for (File file : files) {
+            Bukkit.broadcastMessage("Name: " + file);
+        }
+
         Player player = (Player) commandSender;
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("type", "play");
-        byte[] bytes = getBytesFromFile(files.get(0));
+        byte[] bytes = getBytesFromFile(files[index]);
         String compressBase64 = Base64.encodeBase64String(bytes);
         jsonObject.addProperty("data", compressBase64);
-        jsonObject.addProperty("id", files.get(0));
+        jsonObject.addProperty("id", files[index].getName());
+        index++;
         //player.sendMessage(jsonObject.toString());
         MediaProtocol.sendLabyModMessage(player, "sound", jsonObject);
         return true;
     }
 
-    private static byte[] getBytesFromFile(String file) {
+    private static byte[] getBytesFromFile(File file) {
         try {
-            byte[] oggBytes = Files.readAllBytes(new File(Main.getInstance().getDataFolder(), file).toPath());
-            return oggBytes;
+            File oggFile = file;
+            byte[] bytes = new byte[(int) oggFile.length()];
+            FileInputStream fis = new FileInputStream(oggFile);
+            fis.read(bytes);
+            fis.close();
+            return bytes;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
@@ -64,18 +79,18 @@ public class TestCommand implements CommandExecutor, PluginMessageListener {
         String json = MediaProtocol.readString(buf, Short.MAX_VALUE);
 
         if(key.equals("done")) {
-            JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-            if(jsonObject.get("id").getAsString().equals(files.get(0))) {
-                JsonObject jsonObject2 = new JsonObject();
-                jsonObject2.addProperty("type", "play");
-                byte[] bytes = getBytesFromFile(files.get(1));
-                String compressBase64 = Base64.encodeBase64String(bytes);
-                jsonObject2.addProperty("data", compressBase64);
-                jsonObject2.addProperty("id", files.get(1));
-                //player.sendMessage(jsonObject.toString());
-                MediaProtocol.sendLabyModMessage(player, "sound", jsonObject2);
-
+            if(files[index] == null) {
+                return;
             }
+            JsonObject jsonObject2 = new JsonObject();
+            jsonObject2.addProperty("type", "play");
+            byte[] bytes = getBytesFromFile(files[index]);
+            String compressBase64 = Base64.encodeBase64String(bytes);
+            jsonObject2.addProperty("data", compressBase64);
+            jsonObject2.addProperty("id", files[index].getName());
+            //player.sendMessage(jsonObject.toString());
+            MediaProtocol.sendLabyModMessage(player, "sound", jsonObject2);
+            index++;
         }
     }
 }
